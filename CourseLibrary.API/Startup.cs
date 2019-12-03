@@ -1,11 +1,14 @@
+using AutoMapper;
 using CourseLibrary.API.DbContexts;
 using CourseLibrary.API.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 
 namespace CourseLibrary.API
 {
@@ -29,6 +32,8 @@ namespace CourseLibrary.API
              
             services.AddScoped<ICourseLibraryRepository, CourseLibraryRepository>();
 
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
             services.AddDbContext<CourseLibraryContext>(options =>
             {
                 options.UseSqlServer(
@@ -42,6 +47,17 @@ namespace CourseLibrary.API
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler(appBuilder =>
+                    {
+                        appBuilder.Run(async context =>
+                        {
+                            context.Response.StatusCode = 500;
+                            await context.Response.WriteAsync("An unaxpected error happened. Try again later.");
+                        });
+                    });
             }
 
             app.UseRouting();
